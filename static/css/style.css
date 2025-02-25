@@ -1,0 +1,28 @@
+/* 기본 스타일 */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    flex: 1;
+}
+
+/* 게시글 스타일 */
+.post-content img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* 첨부 파일 스타일 */
+.attachment-list {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.attachment-item {
+    margin-bottom: 5px;
+} 

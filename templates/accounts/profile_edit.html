@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}프로필 수정{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>프로필 수정</h2>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                <label for="{{ form.nickname.id_for_label }}" class="form-label">닉네임</label>
+                {{ form.nickname }}
+            </div>
+            
+            <div class="mb-3">
+                <label for="{{ form.profile_image.id_for_label }}" class="form-label">프로필 이미지</label>
+                {{ form.profile_image }}
+                {% if user.profile_image %}
+                    <div class="mt-2">
+                        <img src="{{ user.profile_image.url }}" alt="현재 프로필 이미지" class="img-thumbnail" style="max-width: 100px;">
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <label for="{{ form.bio.id_for_label }}" class="form-label">소개</label>
+                {{ form.bio }}
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'accounts:profile' %}" class="btn btn-secondary">취소</a>
+                <button type="submit" class="btn btn-primary">저장</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

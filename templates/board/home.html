@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}FreeBoard - 홈{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>최근 게시글</h2>
+        <div class="list-group mb-4">
+            {% if recent_posts %}
+                {% for post in recent_posts %}
+                    <a href="{% url 'board:post_detail' post_id=post.id %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ post.title }}</h5>
+                            <small>{{ post.created_at|date:"Y-m-d" }}</small>
+                        </div>
+                        <p class="mb-1">{{ post.author.username }}</p>
+                        <small>조회수: {{ post.view_count }}</small>
+                    </a>
+                {% endfor %}
+            {% else %}
+                <div class="list-group-item">
+                    <p class="mb-0">아직 게시글이 없습니다.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <h2>게시판 목록</h2>
+        <div class="list-group">
+            {% for board in boards %}
+                <a href="{% url 'board:board_detail' board_id=board.id %}" class="list-group-item list-group-item-action">
+                    <h5 class="mb-1">{{ board.title }}</h5>
+                    <p class="mb-1">{{ board.description }}</p>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %} 
