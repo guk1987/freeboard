@@ -1,11 +1,12 @@
 from django.contrib import admin
-from .models import Board, Post, Comment, Attachment
+from .models import Board, Post, Comment, Attachment, Vote
 
 @admin.register(Board)
 class BoardAdmin(admin.ModelAdmin):
     """게시판 관리자"""
-    list_display = ('title', 'created_at')
-    search_fields = ('title', 'description')
+    list_display = ('name', 'description', 'created_at')
+    search_fields = ('name', 'description')
+    list_filter = ('created_at',)
 
 class AttachmentInline(admin.TabularInline):
     """첨부 파일 인라인"""
@@ -15,7 +16,7 @@ class AttachmentInline(admin.TabularInline):
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     """게시글 관리자"""
-    list_display = ('title', 'board', 'author', 'created_at', 'view_count')
+    list_display = ('title', 'board', 'author', 'created_at', 'views')
     list_filter = ('board', 'created_at')
     search_fields = ('title', 'content', 'author__username')
     inlines = [AttachmentInline]
@@ -33,3 +34,9 @@ class AttachmentAdmin(admin.ModelAdmin):
     list_display = ('filename', 'post', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('filename', 'post__title')
+
+@admin.register(Vote)
+class VoteAdmin(admin.ModelAdmin):
+    """투표 관리자"""
+    list_display = ['user', 'vote_type', 'content_object', 'created_at']
+    list_filter = ['vote_type', 'created_at']

@@ -12,13 +12,22 @@
             {% csrf_token %}
             
             <div class="mb-3">
-                <label for="{{ form.nickname.id_for_label }}" class="form-label">닉네임</label>
+                <label for="{{ form.nickname.id_for_label }}" class="form-label">{{ form.nickname.label }}</label>
                 {{ form.nickname }}
+                {% if form.nickname.errors %}
+                    <div class="text-danger">{{ form.nickname.errors }}</div>
+                {% endif %}
+                {% if form.nickname.help_text %}
+                    <div class="form-text">{{ form.nickname.help_text|safe }}</div>
+                {% endif %}
             </div>
             
             <div class="mb-3">
-                <label for="{{ form.profile_image.id_for_label }}" class="form-label">프로필 이미지</label>
+                <label for="{{ form.profile_image.id_for_label }}" class="form-label">{{ form.profile_image.label }}</label>
                 {{ form.profile_image }}
+                {% if form.profile_image.errors %}
+                    <div class="text-danger">{{ form.profile_image.errors }}</div>
+                {% endif %}
                 {% if user.profile_image %}
                     <div class="mt-2">
                         <img src="{{ user.profile_image.url }}" alt="현재 프로필 이미지" class="img-thumbnail" style="max-width: 100px;">
@@ -27,8 +36,11 @@
             </div>
             
             <div class="mb-3">
-                <label for="{{ form.bio.id_for_label }}" class="form-label">소개</label>
+                <label for="{{ form.bio.id_for_label }}" class="form-label">{{ form.bio.label }}</label>
                 {{ form.bio }}
+                {% if form.bio.errors %}
+                    <div class="text-danger">{{ form.bio.errors }}</div>
+                {% endif %}
             </div>
             
             <div class="d-flex justify-content-between">

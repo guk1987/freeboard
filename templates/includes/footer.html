@@ -1,5 +1,81 @@
-<footer class="bg-dark text-white mt-5 py-3">
-    <div class="container text-center">
-        <p>&copy; {% now "Y" %} FreeBoard. All rights reserved.</p>
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="footer-logo">FreeBoard</div>
+                <p class="footer-about">자유롭게 의견을 나누고, 정보를 공유하는 커뮤니티 플랫폼입니다. 다양한 주제로 대화하고 소통해보세요.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                    <a href="#" aria-label="GitHub"><i class="bi bi-github"></i></a>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 mt-4 mt-lg-0">
+                <div class="footer-links">
+                    <h5>바로가기</h5>
+                    <ul>
+                        <li><a href="{% url 'board:home' %}">홈</a></li>
+                        <li><a href="{% url 'board:post_list' %}">전체 게시글</a></li>
+                        <li><a href="{% url 'board:post_create' %}">글 작성하기</a></li>
+                        <li><a href="#">게시판 목록</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 mt-4 mt-lg-0">
+                <div class="footer-links">
+                    <h5>이용안내</h5>
+                    <ul>
+                        <li><a href="#">이용약관</a></li>
+                        <li><a href="#">개인정보처리방침</a></li>
+                        <li><a href="#">커뮤니티 가이드라인</a></li>
+                        <li><a href="#">자주 묻는 질문</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4 mt-4 mt-lg-0">
+                <div class="footer-links">
+                    <h5>인기 게시판</h5>
+                    <ul id="popular-boards">
+                        <!-- 자바스크립트로 인기 게시판 불러오기 -->
+                        <li><a href="#">로딩 중...</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
-</footer> 
+    <div class="footer-bottom">
+        <div class="container">
+            <p>&copy; 2023 FreeBoard. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // 인기 게시판 데이터 불러오기 (예시)
+    document.addEventListener('DOMContentLoaded', function() {
+        const popularBoards = document.getElementById('popular-boards');
+        
+        // 이 부분은 실제로는 서버에서 Ajax로 데이터를 받아와야 함
+        // 지금은 예시로 하드코딩
+        const boards = [
+            { name: "자유게시판", id: 1 },
+            { name: "질문과 답변", id: 2 },
+            { name: "정보 공유", id: 3 },
+            { name: "유머", id: 4 }
+        ];
+        
+        if (popularBoards) {
+            popularBoards.innerHTML = '';
+            
+            boards.forEach(board => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = `/board/${board.id}/`;
+                a.textContent = board.name;
+                li.appendChild(a);
+                popularBoards.appendChild(li);
+            });
+        }
+    });
+</script> 

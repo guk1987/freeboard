@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     # 로컬 앱
     'accounts',
     'board',
+    'markdown',
 ]
 
 MIDDLEWARE = [
@@ -174,3 +175,23 @@ MAX_UPLOAD_SIZE = 10 * 1024 * 1024
 
 # 디버그 툴바 설정
 INTERNAL_IPS = ['127.0.0.1']
+
+# django-allauth 설정 (수정된 버전)
+ACCOUNT_LOGIN_METHODS = {'email', 'username'}  # 사용자명 또는 이메일로 로그인
+ACCOUNT_EMAIL_REQUIRED = True  # 이메일 필수
+ACCOUNT_USERNAME_REQUIRED = True  # 사용자명 필수
+ACCOUNT_EMAIL_VERIFICATION = 'optional'  # 이메일 인증 선택적
+
+# 수정된 부분: 올바른 형식으로 rate limit 설정
+ACCOUNT_RATE_LIMITS = {
+    'login_failed': '5/300s',  # 5번 실패 후 300초 동안 제한 (초 단위를 명시)
+}
+
+ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = True  # 비밀번호 변경 시 로그아웃
+ACCOUNT_LOGOUT_REDIRECT_URL = '/'  # 로그아웃 후 리다이렉트 URL
+LOGIN_REDIRECT_URL = '/'  # 로그인 후 리다이렉트 URL
+
+# 커스텀 폼 설정
+ACCOUNT_FORMS = {
+    'login': 'accounts.forms.CustomLoginForm',
+}

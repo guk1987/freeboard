@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}모든 게시판 - FreeBoard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-0">모든 게시판</h2>
+            <p class="text-muted">다양한 주제의 게시판을 만나보세요.</p>
+        </div>
+    </div>
+    
+    <div class="board-card-grid">
+        {% for board in boards %}
+        <div class="board-card">
+            <div class="board-card-header">
+                <h3 class="board-card-title">{{ board.name }}</h3>
+                <div class="board-card-stats">
+                    <span><i class="bi bi-file-earmark-text me-1"></i> {{ board.post_count }} 게시글</span>
+                </div>
+            </div>
+            <div class="board-card-body">
+                <p class="board-card-description">{{ board.description|truncatechars:100 }}</p>
+                
+                {% if board.latest_post %}
+                <div class="mt-3">
+                    <span class="text-muted">최근 게시글:</span>
+                    <div class="mt-1">
+                        <a href="{% url 'board:post_detail' pk=board.latest_post.id %}" class="latest-post">
+                            {{ board.latest_post.title|truncatechars:35 }}
+                        </a>
+                        {% if board.latest_post.created_at|date:"Y-m-d" == today %}
+                        <span class="badge-new">New</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="board-card-footer">
+                <a href="{% url 'board:board_detail' board_id=board.id %}" class="btn btn-sm btn-primary">
+                    게시판 보기
+                </a>
+                <span class="text-muted small">{{ board.created_at|date:"Y-m-d" }} 개설</span>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-layout-text-window-reverse" style="font-size: 3rem; color: var(--text-muted);"></i>
+            <p class="mt-3 text-muted">등록된 게시판이 없습니다.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

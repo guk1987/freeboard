@@ -1,57 +1,136 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}{% if post %}게시글 수정{% else %}게시글 작성{% endif %}{% endblock %}
+{% block title %}
+    {% if form.instance.pk %}게시글 수정{% else %}새 게시글 작성{% endif %} - FreeBoard
+{% endblock %}
 
 {% block extra_css %}
-<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+<style>
+    .editor-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        border-radius: var(--radius);
+        overflow: hidden;
+        background-color: var(--card-bg);
+        box-shadow: var(--card-shadow);
+    }
+    
+    .editor-toolbar {
+        border-bottom: 1px solid var(--border-color);
+        background-color: var(--bg-secondary);
+    }
+    
+    .CodeMirror {
+        height: 400px;
+        border: none;
+        background-color: var(--card-bg);
+        color: var(--text-color);
+    }
+    
+    .editor-statusbar {
+        border-top: 1px solid var(--border-color);
+        background-color: var(--bg-secondary);
+    }
+    
+    .form-container {
+        background-color: var(--card-bg);
+        padding: 2rem;
+        border-radius: var(--radius);
+        box-shadow: var(--card-shadow);
+    }
+    
+    .preview-toggle {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .preview-toggle .form-check-input {
+        margin-right: 0.5rem;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="card-header">
-        <h2>{% if post %}게시글 수정{% else %}게시글 작성{% endif %}</h2>
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-0">
+                {% if form.instance.pk %}게시글 수정{% else %}새 게시글 작성{% endif %}
+            </h2>
+            <p class="text-muted">마크다운으로 글을 작성해보세요.</p>
+        </div>
     </div>
-    <div class="card-body">
-        <form method="post" enctype="multipart/form-data">
+    
+    <div class="form-container">
+        <form method="post">
             {% csrf_token %}
             
             <div class="mb-3">
-                <label for="{{ form.board.id_for_label }}" class="form-label">게시판</label>
-                {{ form.board }}
-            </div>
-            
-            <div class="mb-3">
                 <label for="{{ form.title.id_for_label }}" class="form-label">제목</label>
-                {{ form.title }}
-            </div>
-            
-            <div class="mb-3">
-                <label for="{{ form.content.id_for_label }}" class="form-label">내용</label>
-                {{ form.content }}
-            </div>
-            
-            <div class="mb-3">
-                <label for="{{ form.files.id_for_label }}" class="form-label">첨부 파일</label>
-                {{ form.files }}
-                <div class="form-text">여러 파일을 선택할 수 있습니다. (최대 10MB)</div>
-            </div>
-            
-            {% if post and post.attachments.exists %}
-                <div class="mb-3">
-                    <label class="form-label">기존 첨부 파일</label>
-                    <ul class="list-group">
-                        {% for attachment in post.attachments.all %}
-                            <li class="list-group-item">
-                                {{ attachment.filename }}
-                            </li>
-                        {% endfor %}
-                    </ul>
+                <input type="text" class="form-control" id="{{ form.title.id_for_label }}" name="{{ form.title.name }}" 
+                       value="{{ form.title.value|default:'' }}" required>
+                {% if form.title.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.title.errors %}
+                    {{ error }}
+                    {% endfor %}
                 </div>
-            {% endif %}
+                {% endif %}
+            </div>
             
-            <div class="d-flex justify-content-between">
-                <a href="{% if post %}{% url 'board:post_detail' post_id=post.id %}{% else %}{% url 'board:home' %}{% endif %}" class="btn btn-secondary">취소</a>
-                <button type="submit" class="btn btn-primary">저장</button>
+            <div class="mb-3">
+                <label for="{{ form.board.id_for_label }}" class="form-label">게시판 선택</label>
+                <select class="form-select" id="{{ form.board.id_for_label }}" name="{{ form.board.name }}">
+                    <option value="">선택하세요</option>
+                    {% for choice in form.board.field.choices %}
+                    <option value="{{ choice.0 }}" {% if form.board.value|stringformat:'s' == choice.0|stringformat:'s' %}selected{% endif %}>
+                        {{ choice.1 }}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if form.board.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.board.errors %}
+                    {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label for="{{ form.content.id_for_label }}" class="form-label mb-0">내용</label>
+                    <div class="preview-toggle">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="livePreviewToggle" checked>
+                            <label class="form-check-label" for="livePreviewToggle">실시간 미리보기</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="editor-container">
+                    <textarea id="{{ form.content.id_for_label }}" name="{{ form.content.name }}">{{ form.content.value|default:'' }}</textarea>
+                </div>
+                {% if form.content.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.content.errors %}
+                    {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    {% if form.instance.pk %}수정 완료{% else %}작성 완료{% endif %}
+                </button>
+                <a href="{% if form.instance.pk %}{% url 'board:post_detail' pk=form.instance.pk %}{% else %}{% url 'board:post_list' %}{% endif %}" class="btn btn-outline-secondary">
+                    취소
+                </a>
             </div>
         </form>
     </div>
@@ -59,21 +138,71 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
 <script>
-    $(document).ready(function() {
-        $('.summernote').summernote({
-            height: 300,
+    document.addEventListener('DOMContentLoaded', function() {
+        const easyMDE = new EasyMDE({
+            element: document.getElementById('{{ form.content.id_for_label }}'),
+            spellChecker: false,
+            autosave: {
+                enabled: true,
+                uniqueId: 'post_editor_{% if form.instance.pk %}{{ form.instance.pk }}{% else %}new{% endif %}',
+                delay: 1000,
+            },
+            renderingConfig: {
+                codeSyntaxHighlighting: true,
+            },
+            sideBySideFullscreen: false,
+            status: ['autosave', 'lines', 'words', 'cursor'],
             toolbar: [
-                ['style', ['style']],
-                ['font', ['bold', 'underline', 'clear']],
-                ['color', ['color']],
-                ['para', ['ul', 'ol', 'paragraph']],
-                ['table', ['table']],
-                ['insert', ['link', 'picture']],
-                ['view', ['fullscreen', 'codeview', 'help']]
-            ]
+                'bold', 'italic', 'heading', '|',
+                'quote', 'code', 'link', 'image', '|',
+                'unordered-list', 'ordered-list', 'table', '|',
+                'preview', 'side-by-side', 'fullscreen', '|',
+                'guide'
+            ],
+            promptURLs: true,
+            previewClass: 'editor-preview custom-preview',
+            theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default',
         });
+        
+        // 다크모드에 대응하여 에디터 테마 변경
+        const toggleSwitch = document.querySelector('#checkbox');
+        if (toggleSwitch) {
+            toggleSwitch.addEventListener('change', function(e) {
+                const theme = e.target.checked ? 'dark' : 'default';
+                // EasyMDE는 직접적인 테마 변경 API가 없어서 요소에 클래스 추가/제거로 대응
+                const cm = easyMDE.codemirror;
+                if (theme === 'dark') {
+                    cm.getWrapperElement().classList.add('cm-s-darcula');
+                    cm.getWrapperElement().classList.remove('cm-s-default');
+                } else {
+                    cm.getWrapperElement().classList.add('cm-s-default');
+                    cm.getWrapperElement().classList.remove('cm-s-darcula');
+                }
+            });
+        }
+        
+        // 초기 상태는 분할 화면으로 설정
+        if (easyMDE.isPreviewActive() === false && easyMDE.isSideBySideActive() === false) {
+            easyMDE.toggleSideBySide();
+        }
+        
+        // 실시간 미리보기 토글 기능
+        const livePreviewToggle = document.getElementById('livePreviewToggle');
+        if (livePreviewToggle) {
+            livePreviewToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    if (!easyMDE.isSideBySideActive()) {
+                        easyMDE.toggleSideBySide();
+                    }
+                } else {
+                    if (easyMDE.isSideBySideActive()) {
+                        easyMDE.toggleSideBySide();
+                    }
+                }
+            });
+        }
     });
 </script>
 {% endblock %} 

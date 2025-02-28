@@ -1,10 +1,25 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth import login
 from .models import User
-from .forms import ProfileForm  # 아직 만들지 않음
+from .forms import ProfileForm, CustomUserCreationForm
 
 # Create your views here.
+
+def signup_view(request):
+    """회원가입 뷰"""
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, '회원가입이 완료되었습니다.')
+            return redirect('board:home')
+    else:
+        form = CustomUserCreationForm()
+    
+    return render(request, 'accounts/signup.html', {'form': form})
 
 @login_required
 def profile_view(request):

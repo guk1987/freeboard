@@ -1,5 +1,5 @@
 from django import forms
-from .models import Post, Comment
+from .models import Post, Comment, Board
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
@@ -23,12 +23,17 @@ class PostForm(forms.ModelForm):
     
     class Meta:
         model = Post
-        fields = ['board', 'title', 'content']
+        fields = ['title', 'content', 'board']
         widgets = {
-            'board': forms.Select(attrs={'class': 'form-control'}),
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'content': forms.Textarea(attrs={'class': 'form-control summernote'}),
+            'content': forms.Textarea(attrs={'rows': 10}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['board'].required = False
+        self.fields['board'].label = '게시판'
+        self.fields['title'].label = '제목'
+        self.fields['content'].label = '내용'
 
 class CommentForm(forms.ModelForm):
     """댓글 폼"""
@@ -36,8 +41,12 @@ class CommentForm(forms.ModelForm):
         model = Comment
         fields = ['content']
         widgets = {
-            'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'content': forms.Textarea(attrs={'rows': 3}),
         }
         labels = {
             'content': '댓글',
-        } 
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['content'].label = '댓글' 

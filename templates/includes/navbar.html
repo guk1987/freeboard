@@ -1,31 +1,52 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-light">
     <div class="container">
         <a class="navbar-brand" href="{% url 'board:home' %}">FreeBoard</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'board:home' %}">홈</a>
+                    <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'board:home' %}">홈</a>
                 </li>
-                <!-- 게시판 목록은 나중에 동적으로 추가 -->
+                <li class="nav-item">
+                    <a class="nav-link {% if '/post/list/' in request.path %}active{% endif %}" href="{% url 'board:post_list' %}">전체 게시글</a>
+                </li>
             </ul>
+            
             <ul class="navbar-nav">
+                <li class="nav-item theme-switch-wrapper">
+                    <label class="theme-switch" for="checkbox">
+                        <input type="checkbox" id="checkbox" />
+                        <div class="slider">
+                            <i class="bi bi-brightness-high-fill sun-icon"></i>
+                            <i class="bi bi-moon-stars-fill moon-icon"></i>
+                        </div>
+                    </label>
+                </li>
+
                 {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'accounts:profile' %}">{{ user.username }}</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'account_logout' %}">로그아웃</a>
-                    </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle me-1"></i>
+                        {{ user.nickname|default:user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">내 프로필</a></li>
+                        <li><a class="dropdown-item" href="{% url 'accounts:profile_edit' %}">프로필 편집</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'account_logout' %}">로그아웃</a></li>
+                    </ul>
+                </li>
                 {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'account_login' %}">로그인</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'account_signup' %}">회원가입</a>
-                    </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'account_login' %}">로그인</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'account_signup' %}">회원가입</a>
+                </li>
                 {% endif %}
             </ul>
         </div>

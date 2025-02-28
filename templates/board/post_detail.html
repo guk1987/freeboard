@@ -1,82 +1,264 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}{{ post.title }}{% endblock %}
+{% block title %}{{ post.title }} - FreeBoard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .post-content {
+        line-height: 1.6;
+    }
+    .post-content img {
+        max-width: 100%;
+        height: auto;
+    }
+    .post-content pre {
+        background-color: #f5f5f5;
+        padding: 15px;
+        border-radius: 4px;
+        overflow-x: auto;
+    }
+    .post-content blockquote {
+        border-left: 4px solid #ddd;
+        padding-left: 15px;
+        color: #666;
+    }
+    .post-content table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+    .post-content th, .post-content td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+    .post-content th {
+        background-color: #f2f2f2;
+    }
+    .comment-section {
+        margin-top: 30px;
+    }
+    .comment {
+        border-bottom: 1px solid #eee;
+        padding: 15px 0;
+    }
+    .comment:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="card mb-4">
-    <div class="card-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2 class="mb-0">{{ post.title }}</h2>
-            <div>
-                {% if user == post.author %}
-                    <a href="{% url 'board:post_edit' post_id=post.id %}" class="btn btn-sm btn-outline-primary">수정</a>
-                    <a href="{% url 'board:post_delete' post_id=post.id %}" class="btn btn-sm btn-outline-danger">삭제</a>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    <div class="card-body">
-        <div class="mb-3">
-            <small class="text-muted">
-                작성자: {{ post.author.username }} | 
-                작성일: {{ post.created_at|date:"Y-m-d H:i" }} | 
-                조회수: {{ post.view_count }}
-            </small>
+<div class="container">
+    <!-- 게시글 헤더 -->
+    <div class="post-header">
+        <div class="post-title-container">
+            {% if post.board %}
+            <a href="{% url 'board:board_detail' board_id=post.board.id %}" class="category-badge">
+                {{ post.board.name }}
+            </a>
+            {% endif %}
+            <h2 class="mb-2">{{ post.title }}</h2>
         </div>
         
-        <div class="post-content mb-4">
-            {{ post.content|safe }}
-        </div>
-        
-        {% if post.attachments.exists %}
-            <div class="attachment-list">
-                <h5>첨부 파일</h5>
-                <ul class="list-group">
-                    {% for attachment in post.attachments.all %}
-                        <li class="list-group-item attachment-item">
-                            <a href="{{ attachment.file.url }}" target="_blank">
-                                {{ attachment.filename }}
-                            </a>
-                        </li>
-                    {% endfor %}
-                </ul>
+        <div class="post-info">
+            <div class="post-info-item">
+                <i class="bi bi-person-circle"></i>
+                {{ post.author.nickname|default:post.author.username }}
             </div>
-        {% endif %}
+            <div class="post-info-item">
+                <i class="bi bi-calendar3"></i>
+                {{ post.created_at|date:"Y-m-d H:i" }}
+            </div>
+            <div class="post-info-item">
+                <i class="bi bi-eye"></i>
+                조회수 {{ post.views }}
+            </div>
+            {% if post.created_at|date:"Y-m-d" == today %}
+            <div class="post-info-item">
+                <span class="badge-new">New</span>
+            </div>
+            {% endif %}
+        </div>
     </div>
-</div>
-
-<div class="card mb-4">
-    <div class="card-header">
-        <h4>댓글 ({{ comments.count }})</h4>
-    </div>
-    <div class="card-body">
-        {% if comments %}
-            {% for comment in comments %}
-                <div class="mb-3 pb-3 border-bottom">
-                    <div class="d-flex justify-content-between">
-                        <strong>{{ comment.author.username }}</strong>
-                        <small class="text-muted">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
-                    </div>
-                    <p class="mb-0">{{ comment.content }}</p>
-                </div>
-            {% endfor %}
+    
+    <!-- 게시글 내용 -->
+    <div class="post-content">
+        {% if post.content_html %}
+            {{ post.content_html|safe }}
         {% else %}
-            <p>아직 댓글이 없습니다.</p>
+            {{ post.content|linebreaksbr }}
         {% endif %}
+    </div>
+    
+    <!-- 추천/비추천 버튼 -->
+    <div class="vote-buttons">
+        <form action="{% url 'board:post_vote' post.id 'up' %}" method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="vote-btn upvote {% if user_vote == 'up' %}active{% endif %}">
+                <i class="bi bi-hand-thumbs-up"></i>
+                <span class="vote-count">{{ post.upvotes_count }}</span>
+            </button>
+        </form>
+        
+        <form action="{% url 'board:post_vote' post.id 'down' %}" method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="vote-btn downvote {% if user_vote == 'down' %}active{% endif %}">
+                <i class="bi bi-hand-thumbs-down"></i>
+                <span class="vote-count">{{ post.downvotes_count }}</span>
+            </button>
+        </form>
+    </div>
+    
+    <!-- 글 작성자용 버튼 -->
+    {% if user == post.author %}
+    <div class="d-flex gap-2 mb-4">
+        <a href="{% url 'board:post_edit' pk=post.id %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil-square me-1"></i> 수정하기
+        </a>
+        <a href="{% url 'board:post_delete' pk=post.id %}" class="btn btn-outline-danger" 
+           onclick="return confirm('정말로 이 게시글을 삭제하시겠습니까?')">
+            <i class="bi bi-trash me-1"></i> 삭제하기
+        </a>
+    </div>
+    {% endif %}
+    
+    <!-- 댓글 섹션 -->
+    <div class="comments-section">
+        <h4><i class="bi bi-chat-dots me-2"></i>댓글 {{ post.comments.count }}개</h4>
         
         {% if user.is_authenticated %}
-            <form method="post" action="{% url 'board:comment_create' post_id=post.id %}">
-                {% csrf_token %}
-                <div class="mb-3">
-                    {{ comment_form.content }}
-                </div>
-                <button type="submit" class="btn btn-primary">댓글 작성</button>
-            </form>
-        {% else %}
-            <div class="alert alert-info">
-                댓글을 작성하려면 <a href="{% url 'account_login' %}">로그인</a>이 필요합니다.
+        <form method="post" action="{% url 'board:post_detail' pk=post.id %}" class="mb-4">
+            {% csrf_token %}
+            <div class="mb-3">
+                <textarea name="content" class="form-control" rows="3" placeholder="댓글을 남겨보세요" required></textarea>
             </div>
+            <button type="submit" class="btn btn-primary">댓글 작성</button>
+        </form>
+        {% else %}
+        <div class="alert alert-info mb-4">
+            <i class="bi bi-info-circle me-2"></i>
+            댓글을 작성하려면 <a href="{% url 'account_login' %}">로그인</a>이 필요합니다.
+        </div>
+        {% endif %}
+        
+        <!-- 댓글 목록 -->
+        {% if post.comments.exists %}
+        <div class="comment-list">
+            {% for comment in post.comments.all %}
+            <div class="comment-item">
+                <div class="comment-header">
+                    <div class="comment-author">
+                        <i class="bi bi-person-circle me-1"></i>
+                        {{ comment.author.nickname|default:comment.author.username }}
+                    </div>
+                    <div class="comment-date">
+                        {{ comment.created_at|date:"Y-m-d H:i" }}
+                    </div>
+                </div>
+                <div class="comment-content">
+                    {{ comment.content|linebreaksbr }}
+                </div>
+                
+                <!-- 댓글 추천 버튼 -->
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="vote-buttons" style="margin: 0.5rem 0;">
+                        <form action="{% url 'board:comment_vote' comment.id 'up' %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="vote-btn upvote {% if comment.user_vote == 'up' %}active{% endif %}" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
+                                <i class="bi bi-hand-thumbs-up"></i>
+                                <span class="vote-count">{{ comment.upvotes_count }}</span>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    {% if user == comment.author %}
+                    <div class="comment-actions">
+                        <form action="{% url 'board:comment_delete' pk=comment.id %}" method="post" 
+                              onsubmit="return confirm('정말로 이 댓글을 삭제하시겠습니까?')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i> 삭제
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="bi bi-chat-dots" style="font-size: 2rem; color: var(--text-muted);"></i>
+            <p class="mt-3 text-muted">아직 댓글이 없습니다. 첫 댓글을 작성해보세요!</p>
+        </div>
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 추천/비추천 버튼 클릭 이벤트 처리
+    document.querySelectorAll('.vote-button').forEach(button => {
+        button.addEventListener('click', function() {
+            if (!this.disabled) {
+                const container = this.closest('.vote-buttons');
+                const objectType = container.dataset.type;
+                const objectId = container.dataset.id;
+                const voteType = this.dataset.voteType;
+                
+                // AJAX 요청으로 투표 처리
+                const formData = new FormData();
+                formData.append('type', objectType);
+                formData.append('id', objectId);
+                formData.append('vote_type', voteType);
+                
+                fetch('{% url "board:vote_object" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // 추천/비추천 수 업데이트
+                        container.querySelector('.upvote-count').textContent = data.upvotes;
+                        container.querySelector('.downvote-count').textContent = data.downvotes;
+                        
+                        // 버튼 스타일 업데이트
+                        const upButton = container.querySelector('[data-vote-type="up"]');
+                        const downButton = container.querySelector('[data-vote-type="down"]');
+                        
+                        // 모든 버튼 스타일 초기화
+                        upButton.classList.remove('btn-primary');
+                        upButton.classList.add('btn-outline-primary');
+                        downButton.classList.remove('btn-danger');
+                        downButton.classList.add('btn-outline-danger');
+                        
+                        // 현재 투표 상태에 따라 버튼 스타일 적용
+                        if (data.user_vote === 'up') {
+                            upButton.classList.remove('btn-outline-primary');
+                            upButton.classList.add('btn-primary');
+                        } else if (data.user_vote === 'down') {
+                            downButton.classList.remove('btn-outline-danger');
+                            downButton.classList.add('btn-danger');
+                        }
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('투표 처리 중 오류가 발생했습니다.');
+                });
+            }
+        });
+    });
+});
+</script>
 {% endblock %} 

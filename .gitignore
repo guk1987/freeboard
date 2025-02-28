@@ -169,3 +169,107 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# 환경 변수 및 민감한 정보
+.env
+.env.*
+!.env.example
+
+# 데이터베이스
+db.sqlite3
+*.sql
+*.sqlite3
+*.db
+
+# 파이썬 및 Django 관련 파일
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 가상환경
+venv/
+env/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+.virtualenv/
+virtualenv/
+
+# 미디어 및 사용자 업로드 파일
+media/
+uploads/
+
+# 정적 파일 수집 결과물
+staticfiles/
+static_collected/
+static/admin/
+static/debug_toolbar/
+
+# 로그 파일
+*.log
+logs/
+log/
+
+# IDE 및 에디터 설정
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+.project
+.pydevproject
+.settings/
+
+# 테스트 및 커버리지 데이터
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.pytest_cache/
+cover/
+coverage.xml
+*.cover
+
+# 캐시 파일
+.sass-cache/
+.eslintcache
+.cache/
+.parcel-cache/
+
+# 로컬 개발 도구
+.spyderproject
+.spyproject
+.ropeproject
+.ipynb_checkpoints
+profile_default/
+ipython_config.py
+
+# 배포 관련 파일
+.vercel
+.netlify
+.serverless/
+
+# Poetry
+poetry.lock

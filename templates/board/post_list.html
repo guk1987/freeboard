@@ -1,19 +1,33 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ board.name }} - FreeBoard{% endblock %}
+{% block title %}게시글 목록 - FreeBoard{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="row mb-4">
         <div class="col-md-8">
-            <h2 class="mb-0">{{ board.name }}</h2>
-            <p class="text-muted">{{ board.description }}</p>
+            <h2 class="mb-0">게시글 목록</h2>
+            <p class="text-muted">자유롭게 소통하는 공간입니다.</p>
         </div>
         <div class="col-md-4 d-flex justify-content-end align-items-center">
-            <a href="{% url 'board:post_create' %}?board={{ board.id }}" class="btn btn-primary">
+            <a href="{% url 'board:post_create' %}" class="btn btn-primary">
                 <i class="bi bi-pencil-square me-1"></i> 새 글 작성하기
             </a>
+        </div>
+    </div>
+
+    <!-- 게시판 필터 옵션 -->
+    <div class="board-container mb-4">
+        <div class="p-3 d-flex flex-wrap gap-2">
+            <a href="{% url 'board:post_list' %}" class="btn {% if not board_id %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                전체
+            </a>
+            {% for board in boards %}
+            <a href="{% url 'board:board_detail' board_id=board.id %}" class="btn {% if board_id == board.id %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                {{ board.name }}
+            </a>
+            {% endfor %}
         </div>
     </div>
 
@@ -32,6 +46,9 @@
             <div class="board-row">
                 <div class="board-col board-col-id">{{ post.id }}</div>
                 <div class="board-col board-col-title">
+                    {% if post.board %}
+                    <span class="category-badge">{{ post.board.name }}</span>
+                    {% endif %}
                     <a href="{% url 'board:post_detail' pk=post.id %}" class="post-title">
                         {{ post.title }}
                     </a>
@@ -56,7 +73,7 @@
             <div class="text-center py-5">
                 <i class="bi bi-journal-text" style="font-size: 3rem; color: var(--text-muted);"></i>
                 <p class="mt-3 text-muted">게시글이 없습니다.</p>
-                <a href="{% url 'board:post_create' %}?board={{ board.id }}" class="btn btn-primary mt-2">
+                <a href="{% url 'board:post_create' %}" class="btn btn-primary mt-2">
                     <i class="bi bi-pencil-square me-1"></i> 첫 게시글 작성하기
                 </a>
             </div>
